@@ -58,17 +58,17 @@ class FieldWidget extends StatelessWidget {
     super.key,
     required String hintText,
     required Icon prefixIcon,
-
+      this.keyboardType = TextInputType.text,
   }) : _hintText = hintText, _prefixIcon = prefixIcon;
 
   final String _hintText;
   final Icon _prefixIcon;
-
+  final TextInputType keyboardType;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         prefixIcon: _prefixIcon,
         hintText: _hintText,
