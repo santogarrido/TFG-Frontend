@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pointmaster/screens/login_screen.dart';
+import 'package:pointmaster/widgets/screens/login_register_button.dart';
 import 'package:pointmaster/widgets/screens/textfield_passwordfield.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         )
                       )
                     ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                    SizedBox(height: spaceBetweenButtons),
 
                     //Confirm password
                     Center(
@@ -100,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       )
                     ),
 
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                    SizedBox(height: spaceBetweenButtons),
 
                     //MovilPhone 
 
@@ -113,7 +114,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             prefixIcon: Icon(Icons.phone),
                           ),
                       ),
+                    ),
+
+                    SizedBox(height: spaceBetweenButtons),
+
+                    // Register Button
+
+                    Center(
+                      child: SizedBox(
+                        width: textFieldWidth,
+                        child: RegisterButton(text: "Registrarse"),
+                      ),
                     )
+                    
                   ],
                 ),
               ),

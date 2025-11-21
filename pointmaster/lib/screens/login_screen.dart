@@ -3,10 +3,14 @@ import 'package:pointmaster/screens/register_screen.dart';
 import 'package:pointmaster/widgets/screens/textfield_passwordfield.dart';
 import 'package:pointmaster/widgets/screens/login_register_button.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-  
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
 
