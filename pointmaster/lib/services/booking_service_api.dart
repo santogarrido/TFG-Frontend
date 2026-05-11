@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:pointmaster/models/response_api.dart';
 
 class BookingServiceApi {
-  static const String _baseUrl = 'https://sportaqs-backend.onrender.com';
+  static const String _baseUrl = 'http://10.0.2.2:8080';
 
   //Get all
   Future<ResponseApi> getAllBookings(String token) async {

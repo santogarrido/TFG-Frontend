@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pointmaster/screens/admin/admin_screen.dart';
 import 'package:pointmaster/screens/register_screen.dart';
+import 'package:pointmaster/screens/users/select_club_screen.dart';
 import 'package:pointmaster/widgets/screens/textfield_passwordfield.dart';
-import 'package:pointmaster/widgets/screens/login_register_button.dart';
+import 'package:provider/provider.dart';
+import 'package:pointmaster/providers/user_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,12 +15,31 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
 
     final spaceBetweenButtons = MediaQuery.of(context).size.height * 0.04;
     final textFieldWidth = MediaQuery.of(context).size.width*0.8;
     final height = MediaQuery.of(context).size.height;
+    final userProvider = context.watch<UserProvider>();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -40,8 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: SizedBox(
                     width: textFieldWidth,
                     child: FieldWidget(
-                      hintText: "Email", 
-                      prefixIcon: Icon(Icons.email)
+                      controller: usernameController,
+                      hintText: "username", 
+                      prefixIcon: Icon(Icons.person)
                     )
                   )
                 ),
@@ -50,15 +74,68 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: SizedBox(
                     width: textFieldWidth,
                     child: PasswordWidget(
+                      controller: passwordController,
                       hintText: "Password", 
                       obscureText: true),
                   ),
                 ),
                 SizedBox(height: spaceBetweenButtons),
-                Center(
-                  child: SizedBox(
-                    width: textFieldWidth,
-                    child: RegisterButton(text: "Login"),
+                SizedBox(
+                  width: textFieldWidth,
+                  child: ElevatedButton(
+                    onPressed: userProvider.loading
+                        ? null
+                        : () async {
+                            await userProvider.login(
+                              usernameController.text.trim(),
+                              passwordController.text.trim(),
+                            );
+
+                            final user = userProvider.activeUser;
+
+                            if (user != null) {
+                              if (user.role == 'ROLE_ADMIN') {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        AdminScreen(),
+                                  ),
+                                );
+                              } else if (user.role == 'ROLE_USER') {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SelectClubScreen(),
+                                  ),
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(userProvider.errorMessage!),
+                                ),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC4AD55),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: userProvider.loading
+                        ? const CircularProgressIndicator(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                  SizedBox(height: height * 0.03),

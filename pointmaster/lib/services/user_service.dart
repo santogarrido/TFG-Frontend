@@ -5,9 +5,8 @@ import 'package:pointmaster/models/response_api.dart';
 
 class UserService {
 
-  // static const String _baseUrl = 'http://localhost:8090';
-  // static const String _baseUrl = 'http://10.0.2.2:8090';
-  static const String _baseUrl = 'https://sportaqs-backend.onrender.com';
+  static const String _baseUrl = 'http://10.0.2.2:8080';
+
 
   //register
   Future<ResponseApi> register(
