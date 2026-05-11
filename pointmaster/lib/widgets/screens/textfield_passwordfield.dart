@@ -1,14 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // Widget for the password textfield
 class PasswordWidget extends StatefulWidget {
   final String hintText;
   final bool obscureText;
+  final TextEditingController controller;
 
   const PasswordWidget({
     super.key,
     required this.hintText,
     required this.obscureText,
+    required this.controller
   });
 
   @override
@@ -27,6 +30,7 @@ class PasswordWidgetState extends State<PasswordWidget> {
   @override
   Widget build(BuildContext context) {
     return TextField( 
+      controller: widget.controller,
       obscureText: _obscureText,
       decoration: InputDecoration(
         prefixIcon: Icon(Icons.lock),
@@ -58,16 +62,19 @@ class FieldWidget extends StatelessWidget {
     super.key,
     required String hintText,
     required Icon prefixIcon,
+    required this.controller,
       this.keyboardType = TextInputType.text,
   }) : _hintText = hintText, _prefixIcon = prefixIcon;
 
   final String _hintText;
   final Icon _prefixIcon;
   final TextInputType keyboardType;
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
+      controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         prefixIcon: _prefixIcon,
