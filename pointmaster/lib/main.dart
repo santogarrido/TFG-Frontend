@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'SportAQS',
+      title: 'PointMaster',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const LoginScreen(),
     );

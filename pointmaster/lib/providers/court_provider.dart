@@ -17,6 +17,26 @@ class CourtProvider extends ChangeNotifier{
 
   CourtProvider(this.userProvider); 
 
+  List<Court> _mapToCourtList(dynamic data) {
+    if (data is List<Court>) return data;
+    if (data is Map) {
+      return [
+        Court.fromCourtsJson(
+          Map<String, dynamic>.from(data),
+        ),
+      ];
+    }
+    if (data is List) {
+      return data
+          .whereType<Map>()
+          .map((item) => Court.fromCourtsJson(
+                Map<String, dynamic>.from(item),
+              ))
+          .toList();
+    }
+    return [];
+  }
+
   Future<void> getCourts(int id) async {
 
     try{
@@ -34,7 +54,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.getCourts(id, token);
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -65,7 +85,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.getCourts(id, token);
 
       if(response.success == true){
-        courtsForUsers = response.data;
+        courtsForUsers = _mapToCourtList(response.data);
         courtsForUsers.removeWhere((c) => c.activated == false);
       }else{
         errorMessage = response.message;
@@ -96,7 +116,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.getCourtById(id, token);
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -109,7 +129,13 @@ class CourtProvider extends ChangeNotifier{
     }
   }
 
-  Future<void> addCourt(String name, String category, int bookingDuration, int facilityId) async {
+  Future<void> addCourt(
+    String name,
+    String category,
+    double courtPrice,
+    int bookingDuration,
+    int facilityId,
+  ) async {
         try{
       isLoading = true;
       errorMessage = null;
@@ -122,10 +148,17 @@ class CourtProvider extends ChangeNotifier{
         return;
       }
 
-      ResponseApi response = await _courtService.addCourt(name, category, bookingDuration, facilityId, token);
+      ResponseApi response = await _courtService.addCourt(
+        name,
+        category,
+        courtPrice,
+        bookingDuration,
+        facilityId,
+        token,
+      );
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -153,7 +186,7 @@ class CourtProvider extends ChangeNotifier{
 
       ResponseApi response = await _courtService.updateCourt(id, name, category, bookingDuration, facilityId, token);
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -182,7 +215,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.deleteCourt(id, token);
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -211,7 +244,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.activateCourt(id, token);
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }
@@ -240,7 +273,7 @@ class CourtProvider extends ChangeNotifier{
       ResponseApi response = await _courtService.deactivateCourt(id, token);
 
       if(response.success == true){
-        courts = response.data;
+        courts = _mapToCourtList(response.data);
       }else{
         errorMessage = response.message;
       }

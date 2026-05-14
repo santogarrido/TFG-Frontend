@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pointmaster/providers/user_provider.dart';
 import 'package:pointmaster/screens/login_screen.dart';
-import 'package:pointmaster/widgets/screens/login_register_button.dart';
 import 'package:pointmaster/widgets/screens/textfield_passwordfield.dart';
 import 'package:provider/provider.dart';
 
@@ -165,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   confirmPasswordController.text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("All fields are required"),
+                                    content: Text("Se requieren todos los campos"),
                                   ),
                                 );
                                 return;
@@ -175,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
-                                      "Please enter a valid email address",
+                                      "Por favor, introduce un correo electrónico válido",
                                     ),
                                   ),
                                 );
@@ -186,7 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   confirmPasswordController.text) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Passwords don't match"),
+                                    content: Text("Las contraseñas no coinciden"),
                                   ),
                                 );
                                 return;
@@ -203,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               if (userProvider.errorMessage == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Registered successfully"),
+                                    content: Text("Registro completado correctamente"),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -233,7 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               color: Color.fromARGB(255, 255, 255, 255),
                             )
                           : const Text(
-                              "Register",
+                              "Registrarse",
                               style: TextStyle(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 18,

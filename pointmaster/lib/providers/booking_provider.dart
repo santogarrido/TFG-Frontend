@@ -114,6 +114,7 @@ class BookingProvider extends ChangeNotifier {
       if (response.success && response.data != null) {
         myBookings = (response.data as List)
             .map((e) => Booking.fromJson(e))
+            .where((b) => b.deleted == false)
             .toList();
       } else {
         myBookings = [];
@@ -133,6 +134,7 @@ class BookingProvider extends ChangeNotifier {
     required int courtId,
     required DateTime bookingDateTime,
     required DateTime courtDateTimeBooking,
+    required double courtPrice,
   }) async {
     loading = true;
     errorMessage = null;
@@ -145,6 +147,7 @@ class BookingProvider extends ChangeNotifier {
         courtId,
         bookingDateTime,
         courtDateTimeBooking,
+        courtPrice,
         token!,
       );
 

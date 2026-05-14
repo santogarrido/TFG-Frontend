@@ -70,8 +70,6 @@ class UserService {
       },
     );
 
-    print('STATUS: ${response.statusCode}');
-
     final responseApi = ResponseApi.fromJson(json.decode(response.body));
     return responseApi;
   }
@@ -153,6 +151,58 @@ class UserService {
     Uri url = Uri.parse('$_baseUrl/users/$id');
 
     final response = await http.delete(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      }
+    );
+
+    final responseApi = ResponseApi.fromJson(json.decode(response.body));
+    return responseApi;
+  }
+
+  //Wallet 
+  Future<ResponseApi> getUserWallet(int id, String token) async {
+    Uri url = Uri.parse('$_baseUrl/users/wallet/$id'); 
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      }
+    );
+
+    final responseApi = ResponseApi.fromJson(json.decode(response.body));
+    return responseApi;
+  }
+
+
+  //Wallet 
+  Future<ResponseApi> addMoneyToUserWallet(int id, String token, double amount) async {
+    Uri url = Uri.parse('$_baseUrl/users/wallet/$id/addMoney?amount=$amount'); 
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      }
+    );
+
+    final responseApi = ResponseApi.fromJson(json.decode(response.body));
+    return responseApi;
+  }
+
+  //Wallet 
+  Future<ResponseApi> getUserWalletTransactions(int id, String token) async {
+    Uri url = Uri.parse('$_baseUrl/users/wallet/$id/transactions'); 
+
+    final response = await http.get(
       url,
       headers: {
         'Accept': 'application/json',
