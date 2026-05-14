@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: textFieldWidth,
                     child: FieldWidget(
                       controller: usernameController,
-                      hintText: "username", 
+                      hintText: "Nombre de Usuario", 
                       prefixIcon: Icon(Icons.person)
                     )
                   )
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: textFieldWidth,
                     child: PasswordWidget(
                       controller: passwordController,
-                      hintText: "Password", 
+                      hintText: "Contraseña", 
                       obscureText: true),
                   ),
                 ),
@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        SelectClubScreen(),
+                                        SelectClubScreen(activeUser: user),
                                   ),
                                 );
                               }
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Color.fromARGB(255, 255, 255, 255),
                           )
                         : const Text(
-                            'Login',
+                            'Iniciar sesión',
                             style: TextStyle(
                               color: Color.fromARGB(255, 255, 255, 255),
                               fontSize: 18,

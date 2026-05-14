@@ -34,12 +34,25 @@ class CourtService {
 
   }
 
-  Future<ResponseApi> addCourt(String name, String category, int bookingDuration, int facilityId, String token) async {
+  Future<ResponseApi> addCourt(
+    String name,
+    String category,
+    double courtPrice,
+    int bookingDuration,
+    int facilityId,
+    String token,
+  ) async {
     Uri url = Uri.parse('$_baseUrl/courts');
 
     final response = await http.post(
       url,
-      body: json.encode({'name' : name, 'category' : category, 'bookingDuration' : bookingDuration, 'facilityId' : facilityId}),
+      body: json.encode({
+        'name' : name,
+        'category' : category,
+        'courtPrice': courtPrice,
+        'bookingDuration' : bookingDuration,
+        'facilityId' : facilityId,
+      }),
       headers: {'Accept' : 'application/json', 'Authorization' : 'Bearer $token' , 'Content-Type' : 'application/json'}
     );
 

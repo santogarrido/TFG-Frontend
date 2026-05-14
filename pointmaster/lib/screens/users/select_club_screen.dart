@@ -1,30 +1,129 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:pointmaster/models/user.dart';
+import 'package:pointmaster/providers/facility_provider.dart';
+import 'package:pointmaster/screens/users/user_bookings_screen.dart';
+import 'package:pointmaster/screens/users/courts_screen.dart';
+import 'package:pointmaster/screens/users/user_wallet_screen.dart';
+import 'package:pointmaster/widgets/screens/facility_card.dart';
+import 'package:provider/provider.dart';
 
 class SelectClubScreen extends StatefulWidget {
-  const SelectClubScreen({super.key});
+  final User activeUser;
+
+  const SelectClubScreen({
+    super.key,
+    required this.activeUser,
+  });
 
   @override
-  State<SelectClubScreen> createState() => _SelectClubScreenState();
+  State<SelectClubScreen> createState() =>
+      _SelectClubScreenState();
 }
 
-class _SelectClubScreenState extends State<SelectClubScreen> {
+class _SelectClubScreenState
+    extends State<SelectClubScreen> {
+  void _showUserOptionsSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet),
+                title: const Text('Cartera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    this.context,
+                    MaterialPageRoute(
+                      builder: (_) => UserWalletScreen(
+                        user: widget.activeUser,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month),
+                title: const Text('Reservas'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    this.context,
+                    MaterialPageRoute(
+                      builder: (_) => UserBookingsScreen(
+                        user: widget.activeUser,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      Provider.of<FacilityProvider>(
+        context,
+        listen: false,
+      ).getFacilitiesForUsers();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
-      // Clubs list
-    final List<String> clubs = ['Club 1', 'Club 2', 'Club 3', 'Club 4', 'Club 5', 'Club 6', 'Club 7'];
-    
+    final facilityProvider =
+        Provider.of<FacilityProvider>(context);
+
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         centerTitle: true,
-        title: Text("PointMaster", style: TextStyle(color: Color(0xFFC4AD55))),
+        elevation: 4,
+        shadowColor: Colors.black26,
+        surfaceTintColor: Colors.white,
+
+        title: const Text(
+          "PointMaster",
+          style: TextStyle(
+            color: Colors.black,
+          ),
+        ),
+
         leading: Padding(
-          padding: EdgeInsets.only(left: width * 0.05),
+          padding: EdgeInsets.only(
+            left: width * 0.05,
+          ),
           child: Container(
             width: width * 0.1,
             height: width * 0.1,
@@ -33,17 +132,22 @@ class _SelectClubScreenState extends State<SelectClubScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: width * 0.03,
-                  offset: Offset(0, width * 0.01),
+                  color: Colors.black.withOpacity(0.22),
+                  blurRadius: width * 0.045,
+                  offset: Offset(
+                    0,
+                    width * 0.015,
+                  ),
                 ),
               ],
             ),
+
             child: RawMaterialButton(
-              shape: CircleBorder(),  
-              onPressed: () {},
+              shape: const CircleBorder(),
+              onPressed: _showUserOptionsSheet,
               elevation: 0,
               fillColor: Colors.white,
+
               child: Icon(
                 Icons.person,
                 size: width * 0.055,
@@ -51,34 +155,69 @@ class _SelectClubScreenState extends State<SelectClubScreen> {
               ),
             ),
           ),
-        )
+        ),
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.symmetric(vertical: height * 0.02),
-        itemCount: clubs.length,
-        itemBuilder: (context, index) {
-          final clubName = clubs[index];
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: width * 0.1),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: height * 0.05),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+
+      body: facilityProvider.isLoading
+
+          // Loading
+          ? const Center(
+              child:
+                  CircularProgressIndicator(),
+            )
+
+          // Error
+          : facilityProvider.errorMessage != null
+              ? Center(
+                  child: Text(
+                    facilityProvider
+                        .errorMessage!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                  ),
+                )
+
+              // Lista de clubes
+              : RefreshIndicator(
+                  onRefresh: () =>
+                      facilityProvider.getFacilitiesForUsers(),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding:
+                        const EdgeInsets.symmetric(
+                      vertical: 12,
+                    ),
+                    itemCount: facilityProvider
+                        .facilitiesForUsers.length,
+                    itemBuilder:
+                        (context, index) {
+                      final facility =
+                          facilityProvider
+                                  .facilitiesForUsers[
+                              index];
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CourtsScreen(
+                                facility: facility,
+                                activeUser: widget.activeUser,
+                              ),
+                            ),
+                          );
+                        },
+                        child: FacilityCard(
+                          facility: facility,
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-              onPressed: () {
-                
-              },
-              child: Text(
-                clubName,
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          );
-        },
-        separatorBuilder: (context, index) => SizedBox(height: 16),
-      ),
     );
   }
 }
+

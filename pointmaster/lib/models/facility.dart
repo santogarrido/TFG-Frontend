@@ -5,6 +5,7 @@ class Facility {
   String openTime;
   String closeTime;
   String location;
+  String imageUrl;
   bool activated;
   bool deleted;
 
@@ -14,6 +15,7 @@ class Facility {
     required this.openTime,
     required this.closeTime,
     required this.location,
+    required this.imageUrl,
     required this.activated,
     required this.deleted
   });
@@ -24,6 +26,7 @@ class Facility {
     openTime: json['openTime'], 
     closeTime: json['closeTime'], 
     location: json['location'], 
+    imageUrl: json['imageUrl'] ?? '',
     activated: json['activated'] ?? false,
     deleted: json['deleted'] ?? false,
   );

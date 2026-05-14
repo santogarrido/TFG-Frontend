@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pointmaster/models/response_api.dart';
 import 'package:pointmaster/models/user.dart';
+import 'package:pointmaster/models/wallet.dart';
+import 'package:pointmaster/models/wallet_transaction.dart';
 import 'package:pointmaster/services/user_service.dart';
 
 class UserProvider extends ChangeNotifier {
@@ -9,8 +11,63 @@ class UserProvider extends ChangeNotifier {
   String? errorMessage;
   bool loading = false;
   List<User> userList = [];
+  Wallet? wallet;
+  List<WalletTransaction> walletTransactions = [];
 
   UserProvider(this.userService);
+
+  Wallet? _mapToWallet(dynamic data) {
+    if (data is Wallet) return data;
+
+    if (data is Map<String, dynamic>) {
+      return Wallet.fromWalletJson(data);
+    }
+
+    if (data is Map) {
+      return Wallet.fromWalletJson(Map<String, dynamic>.from(data));
+    }
+
+    if (data is List && data.isNotEmpty) {
+      final first = data.first;
+      if (first is Map<String, dynamic>) {
+        return Wallet.fromWalletJson(first);
+      }
+      if (first is Map) {
+        return Wallet.fromWalletJson(Map<String, dynamic>.from(first));
+      }
+    }
+
+    return null;
+  }
+
+  List<WalletTransaction> _mapToWalletTransactions(dynamic data) {
+    if (data is List<WalletTransaction>) return data;
+
+    if (data is List) {
+      return data
+          .whereType<Map>()
+          .map(
+            (e) => WalletTransaction.fromWalletTransactionJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
+          .toList();
+    }
+
+    if (data is Map<String, dynamic>) {
+      return [WalletTransaction.fromWalletTransactionJson(data)];
+    }
+
+    if (data is Map) {
+      return [
+        WalletTransaction.fromWalletTransactionJson(
+          Map<String, dynamic>.from(data),
+        ),
+      ];
+    }
+
+    return [];
+  }
 
   //login
   Future<void> login(String username, String password) async {
@@ -192,4 +249,105 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  //User's wallet
+  Future<void> userWallet(int id) async {
+        errorMessage = null;
+    loading = true;
+    notifyListeners();
+
+    try {
+      if (activeUser == null || activeUser!.token == null) {
+        errorMessage = 'User not logged or invalid token';
+        return;
+      }
+      ResponseApi response = await userService.getUserWallet(
+        id,
+        activeUser!.token!,
+      );
+      if (!response.success) {
+        errorMessage = response.message;
+      }else{
+        wallet = _mapToWallet(response.data);
+      }
+
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  //Add money to wallet
+  Future<bool> addMoneyToUserWallet(int id, double amount) async {
+    errorMessage = null;
+    loading = true;
+    notifyListeners();
+
+    try {
+      if (activeUser == null || activeUser!.token == null) {
+        errorMessage = 'User not logged or invalid token';
+        return false;
+      }
+      final previousBalance = wallet?.amount ?? 0;
+      ResponseApi response = await userService.addMoneyToUserWallet(
+        id,
+        activeUser!.token!,
+        amount
+      );
+      if (!response.success) {
+        errorMessage = response.message;
+        return false;
+      }else{
+        wallet = _mapToWallet(response.data);
+        wallet ??= await _fetchWalletAfterAdd(id);
+        final newBalance = wallet?.amount ?? previousBalance;
+        return newBalance > previousBalance;
+      }
+
+    } catch (e) {
+      errorMessage = e.toString();
+      return false;
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Wallet?> _fetchWalletAfterAdd(int id) async {
+    final response = await userService.getUserWallet(id, activeUser!.token!);
+    if (!response.success) return null;
+    return _mapToWallet(response.data);
+  }
+
+    //User's wallet transactions
+  Future<void> userWalletTransactions(int id) async {
+    errorMessage = null;
+    loading = true;
+    notifyListeners();
+
+    try {
+      if (activeUser == null || activeUser!.token == null) {
+        errorMessage = 'User not logged or invalid token';
+        return;
+      }
+      ResponseApi response = await userService.getUserWalletTransactions(
+        id,
+        activeUser!.token!,
+      );
+      if (!response.success) {
+        errorMessage = response.message;
+      }else{
+        walletTransactions = _mapToWalletTransactions(response.data);
+      }
+
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
 }

@@ -3,6 +3,7 @@ class Court {
   int id;
   String name;
   String category;
+  double price;
   int bookingDuration;
   bool activated;
   bool deleted;
@@ -12,6 +13,7 @@ class Court {
     required this.id,
     required this.name,
     required this.category,
+    required this.price,
     required this.bookingDuration,
     required this.activated,
     required this.deleted,
@@ -22,6 +24,7 @@ class Court {
     id: json['id'],
     name: json['name'],
     category: json['category'],
+    price: (json['courtPrice'] ?? 0).toDouble(),
     bookingDuration: json['bookingDuration'],
     activated: json['activated'],
     deleted: json['deleted'],

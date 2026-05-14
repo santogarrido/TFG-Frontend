@@ -24,7 +24,7 @@ class BookingServiceApi {
 
   // Get all bookings of a Court
   Future<ResponseApi> getBookingsByCourt(int courtId, String token) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/getByCourt/$courtId');
+    Uri url = Uri.parse('$_baseUrl/bookings/$courtId/getByCourt');
 
     final response = await http.get(
       url,
@@ -43,7 +43,7 @@ class BookingServiceApi {
     int facilityId,
     String token,
   ) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/getAllBookings/$facilityId');
+    Uri url = Uri.parse('$_baseUrl/bookings/$facilityId/getAllByFacilities');
 
     final response = await http.post(
       url,
@@ -60,7 +60,7 @@ class BookingServiceApi {
 
   // Get bookings of an User
   Future<ResponseApi> getBookingsByUser(int userId, String token) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/getBookingsByUser/$userId');
+    Uri url = Uri.parse('$_baseUrl/bookings/$userId/getBookingsByUser');
 
     final response = await http.post(
       url,
@@ -77,7 +77,7 @@ class BookingServiceApi {
 
   // Get booking by id
   Future<ResponseApi> getBookingById(int bookingId, String token) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/getBooking/$bookingId');
+    Uri url = Uri.parse('$_baseUrl/bookings/$bookingId');
 
     final response = await http.post(
       url,
@@ -98,9 +98,10 @@ class BookingServiceApi {
     int courtId,
     DateTime bookingDateTime,
     DateTime courtDateTimeBooking,
+    double courtPrice,
     String token,
   ) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/addBooking');
+    Uri url = Uri.parse('$_baseUrl/bookings');
 
     final response = await http.post(
       url,
@@ -109,6 +110,7 @@ class BookingServiceApi {
         'courtId': courtId,
         'bookingDateTime': bookingDateTime.toIso8601String(),
         'courtDateTimeBooking': courtDateTimeBooking.toIso8601String(),
+        'courtPrice': courtPrice,
       }),
       headers: {
         'Accept': 'application/json',
@@ -123,7 +125,7 @@ class BookingServiceApi {
 
   // Delete booking
   Future<ResponseApi> deleteBooking(int bookingId, String token) async {
-    Uri url = Uri.parse('$_baseUrl/bookings/deleteBooking/$bookingId');
+    Uri url = Uri.parse('$_baseUrl/bookings/$bookingId');
 
     final response = await http.delete(
       url,
