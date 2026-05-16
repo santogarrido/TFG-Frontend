@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pointmaster/models/facility.dart';
 import 'package:pointmaster/providers/facility_provider.dart';
 import 'package:pointmaster/providers/user_provider.dart';
 import 'package:pointmaster/screens/admin/admin_create_facility_screen.dart';
@@ -41,6 +42,58 @@ class _AdminScreenState extends State<AdminScreen> {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
+    );
+  }
+
+  Future<void> _toggleFacilityActivation(bool currentlyActive, int facilityId) async {
+    final facilityProvider = Provider.of<FacilityProvider>(context, listen: false);
+    if (currentlyActive) {
+      await facilityProvider.deactivateFacility(facilityId);
+    } else {
+      await facilityProvider.activateFacility(facilityId);
+    }
+    await facilityProvider.getFacilities();
+    if (!mounted) return;
+    final message = facilityProvider.errorMessage ??
+        (currentlyActive ? 'Club desactivado' : 'Club activado');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _editFacility(Facility facility) async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AdminCreateFacilityScreen(facilityToEdit: facility),
+      ),
+    );
+    if (updated == true && mounted) {
+      await Provider.of<FacilityProvider>(context, listen: false).getFacilities();
+    }
+  }
+
+  Widget _swipeBackground({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Alignment alignment,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment:
+            alignment == Alignment.centerLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
@@ -94,16 +147,40 @@ class _AdminScreenState extends State<AdminScreen> {
                     itemCount: facilities.length,
                     itemBuilder: (context, index) {
                       final facility = facilities[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AdminFacilityDetailScreen(facility: facility),
-                            ),
-                          );
+                      return Dismissible(
+                        key: ValueKey('facility-${facility.id}'),
+                        direction: DismissDirection.horizontal,
+                        background: _swipeBackground(
+                          icon: facility.activated ? Icons.toggle_off : Icons.toggle_on,
+                          label: facility.activated ? 'Desactivar' : 'Activar',
+                          color: facility.activated ? Colors.red : Colors.green,
+                          alignment: Alignment.centerLeft,
+                        ),
+                        secondaryBackground: _swipeBackground(
+                          icon: Icons.edit,
+                          label: 'Editar',
+                          color: Colors.blue,
+                          alignment: Alignment.centerRight,
+                        ),
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.startToEnd) {
+                            await _toggleFacilityActivation(facility.activated, facility.id);
+                          } else {
+                            await _editFacility(facility);
+                          }
+                          return false;
                         },
-                        child: FacilityCard(facility: facility),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AdminFacilityDetailScreen(facility: facility),
+                              ),
+                            );
+                          },
+                          child: FacilityCard(facility: facility),
+                        ),
                       );
                     },
                   ),

@@ -67,6 +67,63 @@ class _AdminFacilityDetailScreenState extends State<AdminFacilityDetailScreen> {
     }
   }
 
+  Future<void> _openEditCourtScreen(Court court) async {
+    final updated = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AdminCreateCourtScreen(
+          facilityId: widget.facility.id,
+          courtToEdit: court,
+        ),
+      ),
+    );
+
+    if (updated == true) {
+      await Provider.of<CourtProvider>(context, listen: false).getCourts(widget.facility.id);
+    }
+  }
+
+  Future<void> _toggleCourtActivation(Court court) async {
+    final courtProvider = Provider.of<CourtProvider>(context, listen: false);
+    if (court.activated) {
+      await courtProvider.deactivateCourt(court.id);
+    } else {
+      await courtProvider.activateCourt(court.id);
+    }
+    await courtProvider.getCourts(widget.facility.id);
+    if (!mounted) return;
+    final message = courtProvider.errorMessage ??
+        (court.activated ? 'Pista desactivada' : 'Pista activada');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _swipeBackground({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Alignment alignment,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment:
+            alignment == Alignment.centerLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final courtProvider = Provider.of<CourtProvider>(context);
@@ -168,7 +225,35 @@ class _AdminFacilityDetailScreenState extends State<AdminFacilityDetailScreen> {
       if (courts.isEmpty) {
         return const [Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No hay pistas')))];
       }
-      return courts.map((court) => CourtCard(court: court, onTap: () {})).toList();
+      return courts
+          .map(
+            (court) => Dismissible(
+              key: ValueKey('court-${court.id}'),
+              direction: DismissDirection.horizontal,
+              background: _swipeBackground(
+                icon: court.activated ? Icons.toggle_off : Icons.toggle_on,
+                label: court.activated ? 'Desactivar' : 'Activar',
+                color: court.activated ? Colors.red : Colors.green,
+                alignment: Alignment.centerLeft,
+              ),
+              secondaryBackground: _swipeBackground(
+                icon: Icons.edit,
+                label: 'Editar',
+                color: Colors.blue,
+                alignment: Alignment.centerRight,
+              ),
+              confirmDismiss: (direction) async {
+                if (direction == DismissDirection.startToEnd) {
+                  await _toggleCourtActivation(court);
+                } else {
+                  await _openEditCourtScreen(court);
+                }
+                return false;
+              },
+              child: CourtCard(court: court, onTap: () {}),
+            ),
+          )
+          .toList();
     }
 
     if (_selectedSection == _AdminSection.bookings) {

@@ -202,7 +202,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               if (userProvider.errorMessage == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Registro completado correctamente"),
+                                    content: Text(
+                                      "Registro completado. No podrás iniciar sesión hasta verificar tu email.",
+                                    ),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
