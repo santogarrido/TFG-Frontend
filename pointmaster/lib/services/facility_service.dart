@@ -7,7 +7,7 @@ import "package:pointmaster/models/response_api.dart";
 
 class FacilityService {
 
-  static const String _baseUrl = 'http://10.0.2.2:8080/facilities';
+  static const String _baseUrl = 'http://149.202.58.58:8080/facilities';
 
   ResponseApi _safeResponse(http.Response response) {
     final body = response.body.trim();

@@ -4,7 +4,7 @@ import 'package:pointmaster/models/response_api.dart';
 
 class CourtService {
 
-  static const String _baseUrl = 'http://10.0.2.2:8080';
+  static const String _baseUrl = 'http://149.202.58.58:8080';
 
   Future<ResponseApi> getCourts(int id, String token) async {
     Uri url = Uri.parse('$_baseUrl/courts/facility/$id');
