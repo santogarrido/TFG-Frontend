@@ -4,7 +4,48 @@ import 'package:http/http.dart' as http;
 import 'package:pointmaster/models/response_api.dart';
 
 class BookingServiceApi {
-  static const String _baseUrl = 'http://10.0.2.2:8080';
+  static const String _baseUrl = 'http://149.202.58.58:8080';
+
+  ResponseApi _safeResponse(http.Response response) {
+    final body = response.body.trim();
+
+    if (body.isEmpty) {
+      final isForbidden = response.statusCode == 403;
+      return ResponseApi(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        data: null,
+        message: response.statusCode >= 200 && response.statusCode < 300
+            ? 'OK'
+            : isForbidden
+                ? 'Saldo insuficiente para reservar esta pista'
+                : 'HTTP ${response.statusCode}',
+      );
+    }
+
+    try {
+      final decoded = json.decode(body);
+      if (decoded is Map<String, dynamic>) {
+        return ResponseApi.fromJson(decoded);
+      }
+
+      return ResponseApi(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        data: decoded,
+        message: response.statusCode >= 200 && response.statusCode < 300
+            ? 'OK'
+            : 'HTTP ${response.statusCode}',
+      );
+    } catch (_) {
+      final isForbidden = response.statusCode == 403;
+      return ResponseApi(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        data: null,
+        message: isForbidden
+            ? 'Saldo insuficiente para reservar esta pista'
+            : body,
+      );
+    }
+  }
 
   //Get all
   Future<ResponseApi> getAllBookings(String token) async {
@@ -19,7 +60,7 @@ class BookingServiceApi {
       },
     );
 
-    return ResponseApi.fromJson(json.decode(response.body));
+    return _safeResponse(response);
   }
 
   // Get all bookings of a Court
@@ -35,7 +76,7 @@ class BookingServiceApi {
       },
     );
 
-    return ResponseApi.fromJson(json.decode(response.body));
+    return _safeResponse(response);
   }
 
   // Get all bookings of a Facility
@@ -54,8 +95,7 @@ class BookingServiceApi {
       },
     );
 
-    final responseApi = ResponseApi.fromJson(json.decode(response.body));
-    return responseApi;
+    return _safeResponse(response);
   }
 
   // Get bookings of an User
@@ -71,8 +111,7 @@ class BookingServiceApi {
       },
     );
 
-    final responseApi = ResponseApi.fromJson(json.decode(response.body));
-    return responseApi;
+    return _safeResponse(response);
   }
 
   // Get booking by id
@@ -88,8 +127,7 @@ class BookingServiceApi {
       },
     );
 
-    final responseApi = ResponseApi.fromJson(json.decode(response.body));
-    return responseApi;
+    return _safeResponse(response);
   }
 
   // Crear una nueva reserva
@@ -119,8 +157,7 @@ class BookingServiceApi {
       },
     );
 
-    final responseApi = ResponseApi.fromJson(json.decode(response.body));
-    return responseApi;
+    return _safeResponse(response);
   }
 
   // Delete booking
@@ -136,7 +173,6 @@ class BookingServiceApi {
       },
     );
 
-    final responseApi = ResponseApi.fromJson(json.decode(response.body));
-    return responseApi;
+    return _safeResponse(response);
   }
 }

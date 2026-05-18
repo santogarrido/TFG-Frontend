@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:pointmaster/models/facility.dart';
 import 'package:pointmaster/providers/facility_provider.dart';
 import 'package:pointmaster/widgets/screens/textfield_passwordfield.dart';
 import 'package:provider/provider.dart';
 
 class AdminCreateFacilityScreen extends StatefulWidget {
-  const AdminCreateFacilityScreen({super.key});
+  final Facility? facilityToEdit;
+
+  const AdminCreateFacilityScreen({
+    super.key,
+    this.facilityToEdit,
+  });
 
   @override
   State<AdminCreateFacilityScreen> createState() => _AdminCreateFacilityScreenState();
@@ -19,6 +25,20 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
   final TextEditingController closeTimeController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
   File? _selectedImage;
+
+  bool get _isEditMode => widget.facilityToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final facility = widget.facilityToEdit;
+    if (facility != null) {
+      nameController.text = facility.name;
+      locationController.text = facility.location;
+      openTimeController.text = facility.openTime;
+      closeTimeController.text = facility.closeTime;
+    }
+  }
 
   @override
   void dispose() {
@@ -43,7 +63,7 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
         elevation: 4,
         shadowColor: Colors.black26,
         surfaceTintColor: Colors.white,
-        title: const Text('Crea tu instalación'),
+        title: Text(_isEditMode ? 'Editar club' : 'Crear club'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
@@ -65,7 +85,7 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
             SizedBox(
               width: fieldWidth,
               child: FieldWidget(
-                hintText: 'Ubicación',
+                hintText: 'Ubicacion',
                 prefixIcon: const Icon(Icons.location_city),
                 controller: locationController,
               ),
@@ -83,40 +103,40 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
               width: fieldWidth,
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: fieldWidth,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  final picked = await _imagePicker.pickImage(
-                    source: ImageSource.gallery,
-                    imageQuality: 90,
-                  );
-                  if (picked == null) return;
-                  setState(() {
-                    _selectedImage = File(picked.path);
-                  });
-                },
-                icon: const Icon(Icons.image),
-                label: Text(
-                  _selectedImage == null
-                      ? 'Seleccionar imagen'
-                      : 'Cambiar imagen',
+            if (!_isEditMode) ...[
+              SizedBox(
+                width: fieldWidth,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final picked = await _imagePicker.pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 90,
+                    );
+                    if (picked == null) return;
+                    setState(() {
+                      _selectedImage = File(picked.path);
+                    });
+                  },
+                  icon: const Icon(Icons.image),
+                  label: Text(
+                    _selectedImage == null ? 'Seleccionar imagen' : 'Cambiar imagen',
+                  ),
                 ),
               ),
-            ),
-            if (_selectedImage != null) ...[
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(
-                  _selectedImage!,
-                  width: fieldWidth,
-                  height: 180,
-                  fit: BoxFit.cover,
+              if (_selectedImage != null) ...[
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    _selectedImage!,
+                    width: fieldWidth,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
+              ],
+              const SizedBox(height: 20),
             ],
-            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -134,7 +154,8 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
                           );
                           return;
                         }
-                        if (_selectedImage == null) {
+
+                        if (!_isEditMode && _selectedImage == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Debes seleccionar una imagen'),
@@ -143,24 +164,38 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
                           return;
                         }
 
-                        await facilityProvider.addFacility(
-                          nameController.text.trim(),
-                          openTimeController.text.trim(),
-                          closeTimeController.text.trim(),
-                          locationController.text.trim(),
-                          _selectedImage!,
-                        );
+                        if (_isEditMode) {
+                          await facilityProvider.updateFacility(
+                            widget.facilityToEdit!.id,
+                            nameController.text.trim(),
+                            openTimeController.text.trim(),
+                            closeTimeController.text.trim(),
+                            locationController.text.trim(),
+                          );
+                        } else {
+                          await facilityProvider.addFacility(
+                            nameController.text.trim(),
+                            openTimeController.text.trim(),
+                            closeTimeController.text.trim(),
+                            locationController.text.trim(),
+                            _selectedImage!,
+                          );
+                        }
 
                         if (!mounted) return;
 
                         if (facilityProvider.errorMessage == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Instalación creada correctamente'),
+                            SnackBar(
+                              content: Text(
+                                _isEditMode
+                                    ? 'Club actualizado correctamente'
+                                    : 'Instalacion creada correctamente',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
-                          Navigator.pop(context);
+                          Navigator.pop(context, true);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -174,9 +209,9 @@ class _AdminCreateFacilityScreenState extends State<AdminCreateFacilityScreen> {
                 ),
                 child: facilityProvider.isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Crear',
-                        style: TextStyle(
+                    : Text(
+                        _isEditMode ? 'Guardar' : 'Crear',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

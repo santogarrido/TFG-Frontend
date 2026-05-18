@@ -24,6 +24,9 @@ class BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bookingProvider = context.read<BookingProvider>();
+    final canCancel =
+        booking.courtDateTimeBooking.difference(DateTime.now()) >=
+        const Duration(hours: 24);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -79,56 +82,61 @@ class BookingCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: ElevatedButton.icon(
-          onPressed: () async {
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Cancelar reserva'),
-                content: const Text('Quieres cancelar esta reserva?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('No'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Si'),
-                  ),
-                ],
-              ),
-            );
+        trailing: canCancel
+            ? ElevatedButton.icon(
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Cancelar reserva'),
+                      content: const Text('Quieres cancelar esta reserva?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('No'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Si'),
+                        ),
+                      ],
+                    ),
+                  );
 
-            if (confirm != true) return;
+                  if (confirm != true) return;
 
-            final messenger = ScaffoldMessenger.of(context);
-            await bookingProvider.deleteBooking(booking.id);
+                  final messenger = ScaffoldMessenger.of(context);
+                  await bookingProvider.deleteBooking(booking.id);
 
-            if (bookingProvider.errorMessage != null) {
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text(bookingProvider.errorMessage!),
+                  if (bookingProvider.errorMessage != null) {
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(bookingProvider.errorMessage!),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  } else {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Reserva cancelada'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.cancel),
+                label: const Text('Cancelar'),
+                style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  textStyle: const TextStyle(fontSize: 14),
                 ),
-              );
-            } else {
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Reserva cancelada'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          },
-          icon: const Icon(Icons.cancel),
-          label: const Text('Cancelar'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.redAccent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            textStyle: const TextStyle(fontSize: 14),
-          ),
-        ),
+              )
+            : null,
       ),
     );
   }

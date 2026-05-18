@@ -1,6 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:pointmaster/models/user.dart';
 import 'package:pointmaster/providers/facility_provider.dart';
+import 'package:pointmaster/providers/user_provider.dart';
+import 'package:pointmaster/screens/login_screen.dart';
 import 'package:pointmaster/screens/users/user_bookings_screen.dart';
 import 'package:pointmaster/screens/users/courts_screen.dart';
 import 'package:pointmaster/screens/users/user_wallet_screen.dart';
@@ -22,6 +24,15 @@ class SelectClubScreen extends StatefulWidget {
 
 class _SelectClubScreenState
     extends State<SelectClubScreen> {
+  Future<void> _logout() async {
+    await Provider.of<UserProvider>(context, listen: false).logout();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   void _showUserOptionsSheet() {
     showModalBottomSheet<void>(
       context: context,
@@ -72,6 +83,14 @@ class _SelectClubScreenState
                       ),
                     ),
                   );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _logout();
                 },
               ),
               const SizedBox(height: 8),

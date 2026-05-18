@@ -151,11 +151,23 @@ class BookingProvider extends ChangeNotifier {
         token!,
       );
 
-      if (response.success && response.data != null) {
-        final newBooking = Booking.fromJson(response.data);
-        bookings.add(newBooking);
-        myBookings.add(newBooking);
-        notifyListeners();
+      if (response.success) {
+        if (response.data is Map<String, dynamic>) {
+          final newBooking = Booking.fromJson(response.data);
+          bookings.add(newBooking);
+          myBookings.add(newBooking);
+          notifyListeners();
+        } else if (response.data is Map) {
+          final newBooking = Booking.fromJson(
+            Map<String, dynamic>.from(response.data),
+          );
+          bookings.add(newBooking);
+          myBookings.add(newBooking);
+          notifyListeners();
+        } else {
+          // Algunos backends devuelven 201 sin payload; lo tratamos como éxito.
+          // La pantalla que crea la reserva ya refresca las reservas después.
+        }
       } else {
         errorMessage = response.message;
       }

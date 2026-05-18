@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pointmaster/models/court.dart';
 import 'package:pointmaster/providers/court_provider.dart';
 import 'package:provider/provider.dart';
 
 class AdminCreateCourtScreen extends StatefulWidget {
   final int facilityId;
+  final Court? courtToEdit;
 
   const AdminCreateCourtScreen({
     super.key,
     required this.facilityId,
+    this.courtToEdit,
   });
 
   @override
@@ -21,6 +24,20 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
 
   String _selectedCategory = 'doble';
 
+  bool get _isEditMode => widget.courtToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final court = widget.courtToEdit;
+    if (court != null) {
+      _nameController.text = court.name;
+      _priceController.text = court.price.toStringAsFixed(2);
+      _durationController.text = court.bookingDuration.toString();
+      _selectedCategory = court.category;
+    }
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -29,7 +46,7 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
     super.dispose();
   }
 
-  Future<void> _createCourt() async {
+  Future<void> _submitCourt() async {
     final courtProvider = context.read<CourtProvider>();
     final messenger = ScaffoldMessenger.of(context);
 
@@ -44,20 +61,31 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
       return;
     }
 
-    await courtProvider.addCourt(
-      name,
-      _selectedCategory,
-      price,
-      duration,
-      widget.facilityId,
-    );
+    if (_isEditMode) {
+      await courtProvider.updateCourt(
+        widget.courtToEdit!.id,
+        name,
+        _selectedCategory,
+        price,
+        duration,
+        widget.facilityId,
+      );
+    } else {
+      await courtProvider.addCourt(
+        name,
+        _selectedCategory,
+        price,
+        duration,
+        widget.facilityId,
+      );
+    }
 
     if (!mounted) return;
 
     if (courtProvider.errorMessage == null) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Pista creada'),
+        SnackBar(
+          content: Text(_isEditMode ? 'Pista actualizada' : 'Pista creada'),
           backgroundColor: Colors.green,
         ),
       );
@@ -82,7 +110,7 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
         elevation: 4,
         shadowColor: Colors.black26,
         surfaceTintColor: Colors.white,
-        title: const Text('Create court'),
+        title: Text(_isEditMode ? 'Editar pista' : 'Crear pista'),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
@@ -123,7 +151,7 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
             ),
             const SizedBox(height: 28),
             ElevatedButton(
-              onPressed: courtProvider.isLoading ? null : _createCourt,
+              onPressed: courtProvider.isLoading ? null : _submitCourt,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -137,8 +165,8 @@ class _AdminCreateCourtScreenState extends State<AdminCreateCourtScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Create',
+                  : Text(
+                      _isEditMode ? 'Guardar' : 'Create',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,

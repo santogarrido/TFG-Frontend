@@ -171,7 +171,14 @@ class CourtProvider extends ChangeNotifier{
     }
   }
 
-  Future<void> updateCourt(int id, String name, String category, int bookingDuration, int facilityId) async {
+  Future<void> updateCourt(
+    int id,
+    String name,
+    String category,
+    double courtPrice,
+    int bookingDuration,
+    int facilityId,
+  ) async {
     try{
       isLoading = true;
       errorMessage = null;
@@ -184,7 +191,15 @@ class CourtProvider extends ChangeNotifier{
         return;
       }
 
-      ResponseApi response = await _courtService.updateCourt(id, name, category, bookingDuration, facilityId, token);
+      ResponseApi response = await _courtService.updateCourt(
+        id,
+        name,
+        category,
+        courtPrice,
+        bookingDuration,
+        facilityId,
+        token,
+      );
       if(response.success == true){
         courts = _mapToCourtList(response.data);
       }else{
